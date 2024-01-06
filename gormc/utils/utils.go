@@ -33,7 +33,7 @@ func gormZeroSourceDirPath(file string) string {
 	dir = filepath.Dir(dir)
 
 	s := filepath.Dir(dir)
-	if filepath.Base(s) != "gorm-zero" {
+	if filepath.Base(s) != "x-gorm-zero" {
 		s = dir
 	}
 	return filepath.ToSlash(s) + "/"

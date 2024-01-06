@@ -1,0 +1,6 @@
+Mysql:
+  Path: localhost
+  Port: 3306
+  Username: "root"
+  Password: "123456"
+  Dbname: "dbname"

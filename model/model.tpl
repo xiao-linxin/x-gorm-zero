@@ -1,16 +1,21 @@
 package {{.pkg}}
 {{if .withCache}}
 import (
+    . "github.com/xiao-linxin/x-gorm-zero/gormc/sql"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"gorm.io/gorm"
 	{{ if or (.gormCreatedAt) (.gormUpdatedAt) }} "time" {{ end }}
 )
 {{else}}
 import (
+    . "github.com/xiao-linxin/x-gorm-zero/gormc/sql"
 	"gorm.io/gorm"
 	{{ if or (.gormCreatedAt) (.gormUpdatedAt) }} "time" {{ end }}
 )
 {{end}}
+
+// avoid unused err
+var _ = InitField
 var _ {{.upperStartCamelObject}}Model = (*custom{{.upperStartCamelObject}}Model)(nil)
 
 type (
@@ -21,14 +26,32 @@ type (
 		custom{{.upperStartCamelObject}}LogicModel
 	}
 
+    custom{{.upperStartCamelObject}}LogicModel interface {
+        WithSession(tx *gorm.DB) {{.upperStartCamelObject}}Model
+    }
+
 	custom{{.upperStartCamelObject}}Model struct {
 		*default{{.upperStartCamelObject}}Model
 	}
 
-	custom{{.upperStartCamelObject}}LogicModel interface {
-
-    	}
 )
+
+{{ if .withCache }}
+func (c custom{{.upperStartCamelObject}}Model) WithSession(tx *gorm.DB) {{.upperStartCamelObject}}Model {
+    newModel := *c.default{{.upperStartCamelObject}}Model
+    c.default{{.upperStartCamelObject}}Model = &newModel
+	c.CachedConn = c.CachedConn.WithSession(tx)
+	return c
+}
+{{ else }}
+func (c custom{{.upperStartCamelObject}}Model) WithSession(tx *gorm.DB) {{.upperStartCamelObject}}Model {
+    newModel := *c.default{{.upperStartCamelObject}}Model
+    c.default{{.upperStartCamelObject}}Model = &newModel
+	c.conn = tx
+	return c
+}
+{{ end }}
+
 {{ if or (.gormCreatedAt) (.gormUpdatedAt) }}
 // BeforeCreate hook create time
 func (s *{{.upperStartCamelObject}}) BeforeCreate(tx *gorm.DB) error {

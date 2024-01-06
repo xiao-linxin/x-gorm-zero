@@ -1,5 +1,7 @@
 package {{.pkg}}
 
-import "gorm.io/gorm"
+import (
+    "gorm.io/gorm"
+)
 
 var ErrNotFound = gorm.ErrRecordNotFound

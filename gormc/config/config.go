@@ -1,11 +1,15 @@
 package config
 
 import (
-	"github.com/SpectatorNan/gorm-zero/gormc/logger"
-	gormLogger "gorm.io/gorm/logger"
 	"log"
 	"os"
 	"time"
+
+	gormLogger "gorm.io/gorm/logger"
+
+	logx "github.com/xiao-linxin/x-gorm-zero/gormc"
+
+	"gorm.io/gorm/logger"
 )
 
 type GormLogConfigI interface {
@@ -14,22 +18,18 @@ type GormLogConfigI interface {
 	GetColorful() bool
 }
 
-func NewDefaultZeroLogger(cfg GormLogConfigI) gormLogger.Interface {
-	newLogger := logger.NewZeroLog(
-		gormLogger.Config{
-			SlowThreshold:             cfg.GetSlowThreshold(), // 慢 SQL 阈值
-			LogLevel:                  cfg.GetGormLogMode(),   // 日志级别
-			IgnoreRecordNotFoundError: true,                   // 忽略ErrRecordNotFound（记录未找到）错误
-			Colorful:                  cfg.GetColorful(),      // 禁用彩色打印
-		},
-	)
-	return newLogger
+func NewLogxGormLogger(cfg GormLogConfigI) logger.Interface {
+	return &logx.GormLog{
+		Level:                     cfg.GetGormLogMode(),   // 日志级别
+		IgnoreRecordNotFoundError: true,                   // 忽略ErrRecordNotFound（记录未找到）错误
+		SlowThreshold:             cfg.GetSlowThreshold(), // 慢 SQL 阈值
+	}
 }
 
-func NewDefaultGormLogger(cfg GormLogConfigI) gormLogger.Interface {
-	newLogger := gormLogger.New(
+func NewDefaultGormLogger(cfg GormLogConfigI) logger.Interface {
+	newLogger := logger.New(
 		log.New(os.Stderr, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
-		gormLogger.Config{
+		logger.Config{
 			SlowThreshold:             cfg.GetSlowThreshold(), // 慢 SQL 阈值
 			LogLevel:                  cfg.GetGormLogMode(),   // 日志级别
 			IgnoreRecordNotFoundError: true,                   // 忽略ErrRecordNotFound（记录未找到）错误
@@ -39,7 +39,7 @@ func NewDefaultGormLogger(cfg GormLogConfigI) gormLogger.Interface {
 	return newLogger
 }
 
-func OverwriteGormLogMode(mode string) gormLogger.LogLevel {
+func OverwriteGormLogMode(mode string) logger.LogLevel {
 	switch mode {
 	case "dev":
 		return gormLogger.Info
